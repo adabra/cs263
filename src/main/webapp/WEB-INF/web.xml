@@ -5,23 +5,50 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
+<!-- /////////////////////// JERSEY (NO SPRING) ///////////////////////// -->
+
 		<servlet>
     		<servlet-name>Jersey Web Application</servlet-name>
     		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+    		
+    		<!-- Package where jersey will scan for resources -->
     		<init-param>
         		<param-name>jersey.config.server.provider.packages</param-name>
         		<param-value>cs263project.cs263project</param-value>
     		</init-param>
+    		<!-- speed up initial Jersey loading by deactivating WADL -->	
     		<init-param>
-        		<!-- speed up initial Jersey loading by deactivating WADL -->
         		<param-name>jersey.config.server.wadl.disableWadl</param-name>
         		<param-value>true</param-value>
     		</init-param>
+    		
     		<load-on-startup>1</load-on-startup>
 		</servlet>
-<servlet-mapping>
-    <servlet-name>Jersey Web Application</servlet-name>
-    <url-pattern>/context/*</url-pattern>
-</servlet-mapping>
+		
+		<servlet-mapping>
+		    <servlet-name>Jersey Web Application</servlet-name>
+		    <url-pattern>/context/*</url-pattern>
+		</servlet-mapping>
+				
+		    <servlet>
+        <servlet-name>room</servlet-name>
+        <servlet-class>cs263project.cs263project.ChatRoomServlet</servlet-class>
+    </servlet>
+   	<servlet>
+       <servlet-name>submit</servlet-name>
+       <servlet-class>cs263project.cs263project.SubmitMessageServlet</servlet-class>
+    </servlet>
+   
+    <servlet-mapping>
+        <servlet-name>submit</servlet-name>
+        <url-pattern>/submit</url-pattern>
+    </servlet-mapping> 
+    <servlet-mapping>
+        <servlet-name>room</servlet-name>
+        <url-pattern>/chatroom</url-pattern>
+    </servlet-mapping>
+	<welcome-file-list>
+	        <welcome-file>chatroom.jsp</welcome-file>
+    </welcome-file-list>
 
 </web-app>
