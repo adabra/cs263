@@ -47,8 +47,36 @@
         <servlet-name>room</servlet-name>
         <url-pattern>/chatroom</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+       <servlet-name>channel</servlet-name>
+       <servlet-class>cs263project.cs263project.ChannelServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>channel</servlet-name>
+        <url-pattern>/channel</url-pattern>
+    </servlet-mapping> 
+    
+    <servlet>
+       <servlet-name>join</servlet-name>
+       <servlet-class>cs263project.cs263project.JoinServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>join</servlet-name>
+        <url-pattern>/join</url-pattern>
+    </servlet-mapping> 
+    
+    <servlet>
+    <servlet-name>ServletTest</servlet-name>
+    <servlet-class>cs263project.cs263project.ServletTest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ServletTest</servlet-name>
+    <url-pattern>/test</url-pattern>
+  </servlet-mapping>
+  
 	<welcome-file-list>
-	        <welcome-file>chatroom.jsp</welcome-file>
+	        <welcome-file>room.jsp</welcome-file>
     </welcome-file-list>
 
 </web-app>

@@ -74,14 +74,14 @@
 						message.getProperty("content"));
 				if (message.getProperty("user") == null) {
 	%>
-	<p>An anonymous person wrote:</p>
+	<p>An anonymous person:</p>
 	<%
 		} else {
 					pageContext.setAttribute("message_user",
 							message.getProperty("user"));
 	%>
 	<p>
-		<b>${fn:escapeXml(message_user.nickname)}</b> wrote:
+		<b>${fn:escapeXml(message_user.nickname)}</b>:
 	</p>
 	<%
 		}
