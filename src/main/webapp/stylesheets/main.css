@@ -1,3 +1,23 @@
-body {
-    padding-top: 50px;
+#chatbox {
+	font-family:tahoma;
+	font-size:12px;
+	color:#79787A;
+	background-color: #161517;
+	border: 1px orange solid;
+	height: 225px;
+	width: 400px;
+	overflow: scroll;
+	float:left;
+	
+}
+#users{
+	font-family:tahoma;
+	font-size:14;
+	color:orange;
+	background-color: #161517;
+	border:1px orange solid;
+	width:150px;
+	height:225px;
+	overflow:scroll;
+	margin-left:1px;
 }
