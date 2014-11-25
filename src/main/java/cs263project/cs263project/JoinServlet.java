@@ -22,6 +22,7 @@ public class JoinServlet extends HttpServlet{
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 			throws IOException, ServletException {
 		
+		boolean invalidNames = false;
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
 		String roomname = request.getParameter("roomname");
@@ -32,11 +33,27 @@ public class JoinServlet extends HttpServlet{
 		Query query = new Query("Room", roomKey);
 		if (datastore.prepare(query).asSingleEntity() == null) {
 			//New room
+			//Check roomname validity
+			if (!Utils.getInstance().isValidName(roomname)){
+				request.setAttribute("invalid_roomname", Boolean.TRUE);
+				invalidNames = true;
+			}
+			//Check name validity
+			if (!Utils.getInstance().isValidName(username)){
+				request.setAttribute("invalid_username", Boolean.TRUE);
+				invalidNames = true;
+			}
+			if (invalidNames) {
+				request.getRequestDispatcher("/welcome.jsp").
+				forward(request, response);
+				return;
+			}
 			Entity room = new Entity("Room", roomKey);
 			room.setProperty("name", roomname);
 			datastore.put(room);
 			
-		}		
+		}	
+		
 		query = new Query("User", roomKey).addSort("name",
 				Query.SortDirection.DESCENDING);
 		List<Entity> users = datastore.prepare(query)

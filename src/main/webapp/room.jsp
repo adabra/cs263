@@ -40,6 +40,7 @@ List<Entity> users = datastore.prepare(query)
 <script
 	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
+<script type="text/javascript" src="/js/util.js"></script>
 <title><%= roomname %></title>
 </head>
 <body>
@@ -61,7 +62,7 @@ List<Entity> users = datastore.prepare(query)
 			    for (Entity user : users) {
 				%>
 				<%= 
-					user.getProperty("name") 
+						((String)(user.getProperty("name"))).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;").replace("\"", "&quot;") 
 					%>
 				<br>
 				<% 
@@ -146,12 +147,6 @@ List<Entity> users = datastore.prepare(query)
     	xhr.open('POST', "/test?message="+userInput+"&roomname="+roomName, true);
     	xhr.send();
     	document.getElementById('userInput').value = '';
-    };
-    
-    function escapeHtml(str) {
-        var div = document.createElement('div');
-        div.appendChild(document.createTextNode(str));
-        return div.innerHTML;
     };
     
     </script>
