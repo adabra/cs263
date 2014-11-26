@@ -21,7 +21,7 @@ public class Utils {
 	boolean isValidName(String name) {
 		 
 	        boolean hasSpecialChar = pattern.matcher(name).find();
-	        return !hasSpecialChar;
+	        return !hasSpecialChar && name.length()>0;
 	}
 	
 }

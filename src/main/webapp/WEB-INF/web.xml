@@ -31,7 +31,7 @@
 		</servlet-mapping>
 				
 		    <servlet>
-        <servlet-name>room</servlet-name>
+        <servlet-name>chatroom</servlet-name>
         <servlet-class>cs263project.cs263project.ChatRoomServlet</servlet-class>
     </servlet>
    	<servlet>
@@ -44,7 +44,7 @@
         <url-pattern>/submit</url-pattern>
     </servlet-mapping> 
     <servlet-mapping>
-        <servlet-name>room</servlet-name>
+        <servlet-name>chatroom</servlet-name>
         <url-pattern>/chatroom</url-pattern>
     </servlet-mapping>
     
@@ -54,27 +54,18 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>channel</servlet-name>
-        <url-pattern>/channel</url-pattern>
+        <url-pattern>/channel/*</url-pattern>
     </servlet-mapping> 
     
     <servlet>
-       <servlet-name>join</servlet-name>
-       <servlet-class>cs263project.cs263project.JoinServlet</servlet-class>
+       <servlet-name>room</servlet-name>
+       <servlet-class>cs263project.cs263project.RoomServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>join</servlet-name>
-        <url-pattern>/join</url-pattern>
+        <servlet-name>room</servlet-name>
+        <url-pattern>/room/*</url-pattern>
     </servlet-mapping> 
     
-    <servlet>
-    <servlet-name>ServletTest</servlet-name>
-    <servlet-class>cs263project.cs263project.ServletTest</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>ServletTest</servlet-name>
-    <url-pattern>/test</url-pattern>
-  </servlet-mapping>
-  
   <servlet>
     <servlet-name>Upload</servlet-name>
     <servlet-class>cs263project.cs263project.Upload</servlet-class>

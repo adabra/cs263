@@ -16,7 +16,8 @@
 
 <%
 String roomname = request.getParameter("roomname");
-String username = (String)(request.getSession().getAttribute("username"));
+String username = (String)(request.getSession().getAttribute(roomname));
+
 ChannelService channelService = ChannelServiceFactory.getChannelService();
 DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 String token = channelService.createChannel(roomname);
@@ -51,6 +52,11 @@ List<Entity> users = datastore.prepare(query)
 		<div class="col-lg-4">
 			<b>Nick:</b> <%= username %>
 		</div>
+		<div class="col-lg-4">
+			<button class="btn btn-default" onclick="leaveRoom();window.location.replace('/')">
+				Leave Room
+			</button>
+		</div>
 	</div>
 
 	<div class="col-lg-6 col-lg-offset-3">
@@ -84,7 +90,7 @@ List<Entity> users = datastore.prepare(query)
 	<div class="col-lg-6 col-lg-offset-3">
 		<input  class='col-lg-11 col-md-11 col-sm-11' type='text' id='userInput' value=''
 			onkeydown='if (event.keyCode == 13) send()' />
-		<input class='col-lg-1 col-md-1 col-sm-1' type='button' onclick='send()' value='send' />
+		<input class='col-lg-1 col-md-1 col-sm-1' type='button' onclick='send("message")' value='send' />
 	</div>
 
 	<div class='col-lg-6 col-lg-offset-3'>
@@ -139,16 +145,19 @@ List<Entity> users = datastore.prepare(query)
 		chatbox.innerHTML += "Channel closed<br>";
     };        
  
-    function send() {
+    function send(type) {
     	var userInput = document.getElementById('userInput').value;
     	var roomName = document.getElementById('roomname').innerHTML;
 		
     	var xhr = new XMLHttpRequest();
-    	xhr.open('POST', "/test?message="+userInput+"&roomname="+roomName, true);
+    	xhr.open('POST', "/channel/"+type+"?message="+userInput+"&roomname="+roomName, true);
     	xhr.send();
     	document.getElementById('userInput').value = '';
     };
     
+    function leaveRoom() {
+    	send("leave");
+    };
     </script>
 
 </body>

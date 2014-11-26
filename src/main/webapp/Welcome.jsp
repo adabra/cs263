@@ -41,7 +41,7 @@
 	%>
 	
 	
-	<form action="/join" method="post">
+	<form action="/room" method="post">
     	Choose nickname:
       	<input type="text" name="username">
       	<%
