@@ -70,17 +70,27 @@
     <servlet-name>Upload</servlet-name>
     <servlet-class>cs263project.cs263project.Upload</servlet-class>
   </servlet>
+  <servlet-mapping>
+    <servlet-name>Upload</servlet-name>
+    <url-pattern>/upload/*</url-pattern>
+  </servlet-mapping>
+  
   <servlet>
     <servlet-name>Serve</servlet-name>
     <servlet-class>cs263project.cs263project.Serve</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>Upload</servlet-name>
-    <url-pattern>/upload</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
     <servlet-name>Serve</servlet-name>
     <url-pattern>/serve</url-pattern>
+  </servlet-mapping>  
+  
+  <servlet>
+    <servlet-name>Gallery</servlet-name>
+    <servlet-class>cs263project.cs263project.GalleryServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Gallery</servlet-name>
+    <url-pattern>/gallery/*</url-pattern>
   </servlet-mapping>  
   
   

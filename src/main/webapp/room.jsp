@@ -33,7 +33,7 @@ List<Entity> users = datastore.prepare(query)
 <!DOCTYPE html>
 <html>
 <head>
-<script src='//code.jquery.com/jquery-1.7.2.min.js'></script>
+<script src='//code.jquery.com/jquery-1.11.1.min.js'></script>
 <script src="/_ah/channel/jsapi"></script>
 <link
 	href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.0/slate/bootstrap.min.css"
@@ -50,7 +50,7 @@ List<Entity> users = datastore.prepare(query)
 			<b>Room:</b> <span id='roomname'><%= roomname %></span>
 		</div>
 		<div class="col-lg-4">
-			<b>Nick:</b> <%= username %>
+			<b>Nick:</b> <span id='username'><%= username %></span>
 		</div>
 		<div class="col-lg-4">
 			<button class="btn btn-default" onclick="leaveRoom();window.location.replace('/')">
@@ -64,16 +64,17 @@ List<Entity> users = datastore.prepare(query)
 			<div class="well well-lg" style="height: 20vh; overflow: auto"
 				id="users">
 				<b>Users:</b><br>
+				<ul id="userslist">
 				<% 
+				String nextname = "";
 			    for (Entity user : users) {
+					nextname = ((String)(user.getProperty("name"))).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;").replace("\"", "&quot;").trim(); 
 				%>
-				<%= 
-						((String)(user.getProperty("name"))).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;").replace("\"", "&quot;") 
-					%>
-				<br>
+					<li class="col-lg-3" id="<%= nextname %>"> <%= nextname %> </li>
 				<% 
 			    }
 			    %>
+			    </ul>
 			</div>
 		</div>
 	</div>
@@ -89,41 +90,31 @@ List<Entity> users = datastore.prepare(query)
 	
 	<div class="col-lg-6 col-lg-offset-3">
 		<input  class='col-lg-11 col-md-11 col-sm-11' type='text' id='userInput' value=''
-			onkeydown='if (event.keyCode == 13) send()' />
+			onkeydown='if (event.keyCode == 13) send("message")' />
 		<input class='col-lg-1 col-md-1 col-sm-1' type='button' onclick='send("message")' value='send' />
 	</div>
 
 	<div class='col-lg-6 col-lg-offset-3'>
 		<div class="well bs-component" style="height: 20vh">
+			<input type="file" id="uploadimage" name="uploadimage" />
+			<input type="button" value="Send image" onclick="upload()" />
+	
 			<form class="form-horizontal"
-				action="<%=blobstoreService.createUploadUrl("/upload")%>"
+				action="<%=blobstoreService.createUploadUrl("/upload/"+roomname)%>"
 				method="post" enctype="multipart/form-data">
-				<fieldset>
-					<b>Upload image to gallery</b>
-					<br>
-					<div class="form-group">
-						<label for="inputTitle" class="col-lg-2 control-label">Title</label>
-						<div class="col-lg-10">
-							<input type="text" class="form-control" id="inputTitle"
-								placeholder="Title">
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="inputFile" class="col-lg-2 control-label">File</label>
-						<div class="col-lg-10">
+				
 							<input type="file" id="inputFile" placeholder="File" name="image"
 								style="color: white">
-						</div>
-						<div class="form-group">
+					
 							<div class="col-lg-10 col-lg-offset-10">
 								<button type="submit" class="btn btn-primary">Submit</button>
 							</div>
-						</div>
-					</div>
-				</fieldset>
 			</form>
+			
 		</div>
 	</div>
+
+	
 
 	<script>
     var token ="<%=token %>";
@@ -132,11 +123,31 @@ List<Entity> users = datastore.prepare(query)
     socket=channel.open();
 	var chatbox=document.getElementById('chatbox');	
 	socket.onopen=function() { 
-		chatbox.innerHTML +="Channel opened<br>";
+		//chatbox.innerHTML +="Channel opened<br>";
+		send("join")
 		};
-    socket.onmessage=function(message){ 
-		chatbox.innerHTML +=escapeHtml(message.data)+"<br>";
-		chatbox.scrollTop = chatbox.scrollHeight;
+    socket.onmessage=function(message){
+    	var type = message.data.substring(0,3);
+    	var content = escapeHtml(message.data.substring(3).trim());
+    	if (type == "cha") {
+			chatbox.innerHTML +=content+"<br>";
+			chatbox.scrollTop = chatbox.scrollHeight;    		
+    	}
+    	else if (type == "lea") {
+    		document.getElementById(content).remove();
+    		chatbox.innerHTML +=content+" has left the room.<br>";
+			chatbox.scrollTop = chatbox.scrollHeight;
+    	}
+    	else if (type == "joi" && document.getElementById('username').innerHTML != content) {
+    		var ul = document.getElementById("userslist");
+    		var li = document.createElement("li");
+    		li.appendChild(document.createTextNode(content));
+    		li.setAttribute("id",content);
+    		li.setAttribute("class","col-lg-3 col-lg-offset-0")
+    		ul.appendChild(li);
+    		chatbox.innerHTML +=content+" has entered the room.<br>";
+			chatbox.scrollTop = chatbox.scrollHeight;
+    	}
     };
     socket.onerror = function() {  
 		chatbox.innerHTML += "Channel error<br>";
@@ -154,6 +165,22 @@ List<Entity> users = datastore.prepare(query)
     	xhr.send();
     	document.getElementById('userInput').value = '';
     };
+    
+    function upload() {
+    	console.log("IN UPLOAD")
+    	var xhr = new XMLHttpRequest();
+        var file = document.getElementById("uploadimage");
+      
+        /* Create a FormData instance */
+        var formData = new FormData();
+        /* Add the file */ 
+        formData.append("upload", file.files[0]);
+
+        xhr.open("post", "<%=blobstoreService.createUploadUrl("/channel/image?roomname="+roomname)%>", true);
+        xhr.setRequestHeader("Content-Type", "multipart/form-data");
+        xhr.setRequestHeader("enctype", "multipart/form-data");
+        xhr.send(formData);  /* Send to server */ 
+    }
     
     function leaveRoom() {
     	send("leave");
