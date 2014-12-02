@@ -44,7 +44,7 @@ public class Upload extends HttpServlet {
         if (blobKey == null) {
             res.sendRedirect("/blobs.jsp");
         } else {
-        	DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        	/*DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         	Key roomKey = KeyFactory.createKey("Room", roomname);
         	Entity image = new Entity("Image", roomKey);
 			image.setProperty("user", username);
@@ -52,7 +52,7 @@ public class Upload extends HttpServlet {
 			datastore.put(image);
 			
 			res.sendRedirect("/gallery/"+roomname);
-//            res.sendRedirect("/serve?blob-key=" + blobKey.getKeyString());
+            */res.sendRedirect("/serve?blob-key=" + blobKey.getKeyString());
         }
     }
 }

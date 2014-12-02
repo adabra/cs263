@@ -30,6 +30,7 @@ public class ChannelServlet extends HttpServlet {
 	private final String LEAVE_MESSAGE = "lea";
 	private final String JOIN_MESSAGE = "joi";
 	private final String IMAGE_MESSAGE = "ima";
+	private final String BLOB_MESSAGE = "blo";
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
@@ -64,23 +65,24 @@ public class ChannelServlet extends HttpServlet {
 		else if (isImage(type)) {
 			BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
 			Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(req);
-			BlobKey blobKey = blobs.get("image").get(0);
+			BlobKey blobKey = blobs.get("file").get(0);
 
 		    if (blobKey == null) {
 		    	return;
 		    }
 		    else {
-		    	String blobkeyString = blobKey.getKeyString();
 		    	Calendar now = Calendar.getInstance();
 		    	int hours = now.get(Calendar.HOUR_OF_DAY);
 		    	int minutes = now.get(Calendar.MINUTE);
 		    	ImagesService imagesService = ImagesServiceFactory.getImagesService();
 		    	String url = imagesService.getServingUrl(ServingUrlOptions.Builder.withBlobKey(blobKey));
 		    	String formattedImageMessage = 
-		    	"["+hours+":"+minutes+"] ["+username+"] "+ url;
-		    			sendMessage(roomname, IMAGE_MESSAGE, formattedImageMessage);		    	
+		    	"["+hours+":"+minutes+"] ["+username+"] "
+		    	+ "<a href=\""+url+"\" target=\"_blank\"> <img src=\""
+		    			+url+"=s128\"></a>";
+		    	sendMessage(roomname, IMAGE_MESSAGE, formattedImageMessage);
+		    	sendMessage(roomname, BLOB_MESSAGE, username+":"+blobstoreService.createUploadUrl("/channel/image/?roomname="+roomname));
 		    }
-			
 		}
 		else if (isLeave(type)) {
 			System.out.println("\n\nLEAVELEAVE\n\n");

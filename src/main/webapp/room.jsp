@@ -33,15 +33,16 @@ List<Entity> users = datastore.prepare(query)
 <!DOCTYPE html>
 <html>
 <head>
-<script src='//code.jquery.com/jquery-1.11.1.min.js'></script>
-<script src="/_ah/channel/jsapi"></script>
-<link
-	href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.0/slate/bootstrap.min.css"
-	rel="stylesheet">
-<script
-	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
-<script type="text/javascript" src="/js/util.js"></script>
+	<script src='//code.jquery.com/jquery-1.11.1.min.js'></script>
+	<script src="/_ah/channel/jsapi"></script>
+	<link
+		href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.0/slate/bootstrap.min.css"
+		rel="stylesheet">
+	<script
+		src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+	<script src="http://malsup.github.com/jquery.form.js"></script>
+	<link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
+	<script type="text/javascript" src="/js/util.js"></script>
 <title><%= roomname %></title>
 </head>
 <body>
@@ -95,22 +96,16 @@ List<Entity> users = datastore.prepare(query)
 	</div>
 
 	<div class='col-lg-6 col-lg-offset-3'>
-		<div class="well bs-component" style="height: 20vh">
-			<input type="file" id="uploadimage" name="uploadimage" />
-			<input type="button" value="Send image" onclick="upload()" />
-	
+		<div class="well bs-component" style="height: 20vh">		
 			<form class="form-horizontal"
-				action="<%=blobstoreService.createUploadUrl("/upload/"+roomname)%>"
+				id="upload_file"
+				action="<%=blobstoreService.createUploadUrl("/channel/image/?roomname="+roomname)%>"
 				method="post" enctype="multipart/form-data">
-				
-							<input type="file" id="inputFile" placeholder="File" name="image"
-								style="color: white">
-					
-							<div class="col-lg-10 col-lg-offset-10">
-								<button type="submit" class="btn btn-primary">Submit</button>
-							</div>
+				<input type="file" name="file" style="color: white" accept="image/*">
+				<div class="col-lg-10 col-lg-offset-10">
+					<input type="button" class="btn btn-primary" name="submit" value="Submit">
+				</div>
 			</form>
-			
 		</div>
 	</div>
 
@@ -128,10 +123,33 @@ List<Entity> users = datastore.prepare(query)
 		};
     socket.onmessage=function(message){
     	var type = message.data.substring(0,3);
-    	var content = escapeHtml(message.data.substring(3).trim());
+    	var content = message.data.substring(3).trim();
+    	if (type!= "ima") {
+    		content = escapeHtml(content);    		
+    	}
     	if (type == "cha") {
 			chatbox.innerHTML +=content+"<br>";
 			chatbox.scrollTop = chatbox.scrollHeight;    		
+    	}
+    	else if (type == "ima") {
+    		chatbox.innerHTML +=content+"<br>";
+			chatbox.scrollTop = chatbox.scrollHeight;
+    	}
+    	else if (type == "blo") {
+    		console.log("BLO");
+    		var separator = content.indexOf(":");
+    		console.log("separator: "+separator);
+    		var name = content.substring(0,separator);
+    		console.log("name: "+name);
+    		console.log("username: "+document.getElementById('username').innerHTML);
+    		console.log(name == document.getElementById('username').innerHTML);
+    		if (name == document.getElementById('username').innerHTML.trim()) {
+    			var url = content.substring(separator+1);
+    			console.log("url: "+url)
+				var form = document.getElementById('upload_file');
+				form.setAttribute('action', url);  
+				console.log("done");
+    		}
     	}
     	else if (type == "lea") {
     		document.getElementById(content).remove();
@@ -166,25 +184,21 @@ List<Entity> users = datastore.prepare(query)
     	document.getElementById('userInput').value = '';
     };
     
-    function upload() {
-    	console.log("IN UPLOAD")
-    	var xhr = new XMLHttpRequest();
-        var file = document.getElementById("uploadimage");
-      
-        /* Create a FormData instance */
-        var formData = new FormData();
-        /* Add the file */ 
-        formData.append("upload", file.files[0]);
-
-        xhr.open("post", "<%=blobstoreService.createUploadUrl("/channel/image?roomname="+roomname)%>", true);
-        xhr.setRequestHeader("Content-Type", "multipart/form-data");
-        xhr.setRequestHeader("enctype", "multipart/form-data");
-        xhr.send(formData);  /* Send to server */ 
-    }
-    
     function leaveRoom() {
     	send("leave");
     };
+    
+    $('#upload_file').submit(function() { 
+	    var options = { 
+	        clearForm: true        // clear all form fields after successful submit 
+	    }; 
+	    $(this).ajaxSubmit(options);
+	    return false; 
+	});
+	
+	$('[name=submit]').click(function(){
+	    $('#upload_file').submit();        
+	});
     </script>
 
 </body>
