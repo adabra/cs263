@@ -11,17 +11,23 @@ public class Utils {
 		pattern = Pattern.compile("[^a-zA-Z0-9]");
 	}
 	
-	static Utils getInstance() {
+	public static Utils getInstance() {
 		if (utils==null){
 			utils = new Utils();
 		}
 		return utils;
 	}
 	
-	boolean isValidName(String name) {
+	public boolean isValidName(String name) {
 		 
 	        boolean hasSpecialChar = pattern.matcher(name).find();
 	        return !hasSpecialChar && name.length()>0;
+	}
+	
+	public boolean isNumeric(String str)
+	{
+		//match a number with optional '-' and decimal.
+		return str.matches("-?\\d+(\\.\\d+)?"); 
 	}
 	
 }

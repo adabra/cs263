@@ -93,6 +93,24 @@
     <url-pattern>/gallery/*</url-pattern>
   </servlet-mapping>  
   
+  <servlet>
+    <servlet-name>Roomfinder</servlet-name>
+    <servlet-class>cs263project.cs263project.RoomfinderServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Roomfinder</servlet-name>
+    <url-pattern>/roomfinder</url-pattern>
+  </servlet-mapping> 
+  
+  <servlet>
+    <servlet-name>Seed</servlet-name>
+    <servlet-class>cs263project.cs263project.SeedServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Seed</servlet-name>
+    <url-pattern>/seed</url-pattern>
+  </servlet-mapping> 
+  
   
 	<welcome-file-list>
 	        <welcome-file>welcome.jsp</welcome-file>

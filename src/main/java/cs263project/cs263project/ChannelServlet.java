@@ -79,9 +79,9 @@ public class ChannelServlet extends HttpServlet {
 		    	String formattedImageMessage = 
 		    	"["+hours+":"+minutes+"] ["+username+"] "
 		    	+ "<a href=\""+url+"\" target=\"_blank\"> <img src=\""
-		    			+url+"=s128\"></a>";
+		    			+url+"=s128\" alt=\"Error displaying image\"></a>";
 		    	sendMessage(roomname, IMAGE_MESSAGE, formattedImageMessage);
-		    	sendMessage(roomname, BLOB_MESSAGE, username+":"+blobstoreService.createUploadUrl("/channel/image/?roomname="+roomname));
+		    	sendMessage(roomname, BLOB_MESSAGE, username+";"+blobstoreService.createUploadUrl("/channel/image/?roomname="+roomname));
 		    }
 		}
 		else if (isLeave(type)) {

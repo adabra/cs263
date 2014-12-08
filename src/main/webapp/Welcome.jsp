@@ -1,90 +1,66 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
-<%@ page import="com.google.appengine.api.datastore.DatastoreService"%>
-<%@ page import="com.google.appengine.api.datastore.DatastoreServiceFactory"%>
-<%@ page import="com.google.appengine.api.datastore.Query" %>
-<%@ page import="com.google.appengine.api.datastore.Entity"%>
-<%@ page import="com.google.appengine.api.datastore.FetchOptions"%>
-<%@ page import="java.util.List" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
 <link
 	href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.0/slate/bootstrap.min.css"
 	rel="stylesheet">
-<title>Welcome</title>
+<title>audchat</title>
 </head>
-<body>
-	<% 
-	DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-	Query query = new Query("Room").addSort("name",
-			Query.SortDirection.DESCENDING);
-	List<Entity> rooms = datastore.prepare(query)
-			.asList(FetchOptions.Builder.withLimit(100));
+<body>  
+    
+    <div class="col-lg-6 col-lg-offset-3">
+			<div class="bs-component">
+				<div class="well well-lg" style="height: 50vh; overflow: auto;">
+    				<h1>audchat</h1>
+    				<h3>Tell us your location to start using audchat</h3>
+					<button class="btn btn-default" onclick="getLocation()">Send location</button>
+    			</div>
+    		</div>
+  	</div>
 	
 	
-	String username = request.getParameter("username");
-	String roomname = request.getParameter("roomname");
-
+	<p id="demo"></p>
+        
+	<script>
+	var x = document.getElementById("demo");
 	
-	if (request.getAttribute("name_taken")!=null) { 
-	%>
-		Nickname <%= username %> 
-		unavailable in room <%= roomname %>
-		<br>
-	<%
+	function getLocation() {
+	    if (navigator.geolocation) {
+	        navigator.geolocation.getCurrentPosition(showPosition, showError);
+	    } else { 
+	        x.innerHTML = "Geolocation is not supported by this browser.";
+	    }
 	}
-	else {}
-	%>
 	
+	function showPosition(position) {
+	    //window.location = "/roomfinder?lat="+position.coords.latitude+"&lon="+position.coords.longitude;
+		window.location = "/roomselector2.jsp?lat="+position.coords.latitude+"&lon="+position.coords.longitude;
+	}
 	
-	<form action="/room" method="post">
-    	Choose nickname:
-      	<input type="text" name="username">
-      	<%
-		if (request.getAttribute("invalid_username")!=null){
-		%>
-		Only letters a-z and numbers 0-9 in user names.	
-		<%	
-		}
-		%>
-      	<br>
-		Choose room:
-		<input type="text" name="roomname" id="roomname">
-		<%
-		if (request.getAttribute("invalid_roomname")!=null){
-		%>
-		Only letters a-z and numbers 0-9 in room names.	
-		<%	
-		}
-		%>
-		<br>
-		<input type="submit" value="Join">
-    </form>
-    
-    <div class="col-lg-6">
-		<div class="bs-component">
-			<div class="well well-lg" style="height: 20vh; overflow: auto"
-				id="users">
-				<% 
-			    for (Entity room : rooms) {
-				%>
-				<%= 
-					//((String)(room.getProperty("name"))).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;").replace("\"", "&quot;")
-					room.getProperty("name")
-				%>
-				<br>
-				<% 
-			    }
-			    %>
-			</div>
-		</div>
-	</div>
-    
-    
+	function showError(error) {
+	    switch(error.code) {
+	        case error.PERMISSION_DENIED:
+	            x.innerHTML = "User denied the request for Geolocation."
+	            break;
+	        case error.POSITION_UNAVAILABLE:
+	            x.innerHTML = "Location information is unavailable."
+	            break;
+	        case error.TIMEOUT:
+	            x.innerHTML = "The request to get user location timed out."
+	            break;
+	        case error.UNKNOWN_ERROR:
+	            x.innerHTML = "An unknown error occurred."
+	            break;
+	    
+	    }
+	}
+	</script>
 
 </body>
 </html>
