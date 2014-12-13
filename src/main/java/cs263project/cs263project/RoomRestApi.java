@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -27,6 +28,9 @@ import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.gson.Gson;
@@ -51,14 +55,29 @@ public class RoomRestApi {
     public String getRoomInCityWithName(
     		@PathParam("roomname") String roomname,
     		@PathParam("city") String city) {
-    	Key roomKey = new KeyFactory.Builder("City", city).
-    			addChild("Room", roomname).getKey();
-    	Query query = new Query("Room", roomKey);
-    	Entity entity = datastore.prepare(query).asSingleEntity();
-    	if (entity==null) {
-    		return "";
-    	}
-        return new Gson().toJson(entity.getProperties());
+    	
+    	//Try getting room from memcache
+		String key = city+":"+roomname;
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+	    syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+	    Entity roomEntity = (Entity) syncCache.get(key); // read from cache
+	    if (roomEntity != null) {
+	    	System.out.println(city+":"+roomname+" found in memcache!");
+	    }
+	    if (roomEntity == null) {
+	    	System.out.println(city+":"+roomname+" not in memcache, checking datastore");
+	      // Entity not in cache, try datastore
+	    	Key roomKey = new KeyFactory.Builder("City", city).
+	    			addChild("Room", roomname).getKey();
+	    	Query query = new Query("Room", roomKey);
+	    	roomEntity = datastore.prepare(query).asSingleEntity();
+	    	if (roomEntity==null) {
+	    		return "";
+	    	}
+	      syncCache.put(key, roomEntity); // populate cache
+	    }
+    	
+        return new Gson().toJson(roomEntity.getProperties());
     }
     
     /**

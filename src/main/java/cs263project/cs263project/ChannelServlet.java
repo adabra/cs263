@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,9 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.gson.Gson;
 
 @SuppressWarnings("serial")
@@ -90,11 +94,14 @@ public class ChannelServlet extends HttpServlet {
 		}
 		else if (isLeave(type)) {
 			System.out.println("\n\nLEAVELEAVE\n\n");
-			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			
 			//Breaking roomname into city and room
 			String[] cityAndRoom = roomname.split(":");
 			String city = cityAndRoom[0];
 			String room = cityAndRoom[1];
+			
+			//Removing user from datastore
+			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			Key userkey = new KeyFactory.Builder("City", city)
 			.addChild("Room", room)
 			.addChild("User", username).getKey();
@@ -106,6 +113,11 @@ public class ChannelServlet extends HttpServlet {
 			Entity roomEntity = datastore.prepare(query).asSingleEntity();
 			roomEntity.setProperty("nr_of_users", Integer.parseInt(roomEntity.getProperty("nr_of_users").toString())-1);
 			datastore.put(roomEntity);
+			//Put or update room in memcache
+			String key = roomname;
+			MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+			syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+			syncCache.put(key, roomEntity);
 			
 			message = new Message(LEAVE_MESSAGE, username, "", time);
 			req.getSession().removeAttribute(roomname);

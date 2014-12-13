@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Scanner;
 import java.util.logging.Level;
 
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
@@ -28,17 +29,17 @@ public class Test {
 		}
 		
 		
-//		String key = "1";
-//		byte[] value;
-//		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
-//	    syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
-//	    value = (byte[]) syncCache.get(key); // read from cache
-//	    if (value == null) {
-//	      // get value from other source
-//	      // ........
-//
-//	      syncCache.put(key, value); // populate cache
-//	    }
+		//Try getting room from memcache
+		String key = "roomname";
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+	    syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+	    Entity roomEntity = (Entity) syncCache.get(key); // read from cache
+	    if (roomEntity == null) {
+	      // Entity not in cache, get value from other source
+	      
+
+	      syncCache.put(key, roomEntity); // populate cache
+	    }
 
 		
 	}

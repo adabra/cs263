@@ -3,6 +3,7 @@ package cs263project.cs263project;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,6 +18,9 @@ import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 public class RoomServlet extends HttpServlet{
 
@@ -57,23 +61,32 @@ public class RoomServlet extends HttpServlet{
 			return;
 		}
 		
-		
-		//Check if room exists
-		Key roomKey = new KeyFactory.Builder("City", city).
-				addChild("Room", roomname).getKey();
-		Query query = new Query("Room", roomKey);
-		Entity room = datastore.prepare(query).asSingleEntity();
-		if (room == null) {
-			//New room
-			Key cityKey = KeyFactory.createKey("City", city);
-			room = new Entity("Room", roomname, cityKey);
-			room.setProperty("name", roomname);
-			room.setProperty("location", new GeoPt(lat, lon));
-			room.setProperty("city", city);
-			room.setProperty("nr_of_users", new Integer(0));
-			
-		}
-
+		//Check if room exists in memcache
+		String key = city+":"+roomname;
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+	    syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+	    Entity roomEntity = (Entity) syncCache.get(key); // read from cache
+	    Query query;
+	    Key roomKey = new KeyFactory.Builder("City", city).
+	    		addChild("Room", roomname).getKey();
+	    if (roomEntity != null) {
+	    	System.out.println(city+":"+roomname+" found in memcache!");
+	    }
+	    if (roomEntity == null) {
+			//Check if room exists in datastore
+			query = new Query("Room", roomKey);
+			roomEntity = datastore.prepare(query).asSingleEntity();
+			if (roomEntity == null) {
+				//Room not found in memcache or datastore, it's a new room
+				Key cityKey = KeyFactory.createKey("City", city);
+				roomEntity = new Entity("Room", roomname, cityKey);
+				roomEntity.setProperty("name", roomname);
+				roomEntity.setProperty("location", new GeoPt(lat, lon));
+				roomEntity.setProperty("city", city);
+				roomEntity.setProperty("nr_of_users", new Integer(0));
+				
+			}
+	    }
 		
 		
 		float maxLat = lat+0.002f;
@@ -81,7 +94,7 @@ public class RoomServlet extends HttpServlet{
 		float maxLon = lon+0.002f;
 		float minLon = lon-0.002f;
 		
-		GeoPt loc = (GeoPt)room.getProperty("location");
+		GeoPt loc = (GeoPt)roomEntity.getProperty("location");
 		float roomLat = loc.getLatitude();
 		float roomLon = loc.getLongitude();
 		if (!(roomLat>minLat && roomLat<maxLat
@@ -111,13 +124,18 @@ public class RoomServlet extends HttpServlet{
 			forward(request, response);
 		}
 		else {
+			//Create user
 			Entity user = new Entity("User", username, roomKey);
 			user.setProperty("name", username);
+			//Save user to datastore
 			datastore.put(user);
-			System.out.println("\n\n\nNUMBEROFUSERSBEFORE: "+room.getProperty("nr_of_users").toString()+"\n\n\n");
-			room.setProperty("nr_of_users", Integer.parseInt(room.getProperty("nr_of_users").toString())+1);
-			System.out.println("NUMBEROFUSERSAFTER: "+room.getProperty("nr_of_users").toString()+"\n\n\n");
-			datastore.put(room);
+			System.out.println("\n\n\nNUMBEROFUSERSBEFORE: "+roomEntity.getProperty("nr_of_users").toString()+"\n\n\n");
+			roomEntity.setProperty("nr_of_users", Integer.parseInt(roomEntity.getProperty("nr_of_users").toString())+1);
+			System.out.println("NUMBEROFUSERSAFTER: "+roomEntity.getProperty("nr_of_users").toString()+"\n\n\n");
+			//Put or update room in memcache
+			syncCache.put(key, roomEntity);
+			//Save room to datastore
+			datastore.put(roomEntity);
 			request.getSession().setAttribute(city+":"+roomname, username);
 			response.sendRedirect("/room/"+city+"/"+roomname);
 		}	

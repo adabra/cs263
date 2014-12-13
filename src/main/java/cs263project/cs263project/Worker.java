@@ -2,6 +2,7 @@ package cs263project.cs263project;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,6 +15,10 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 
 public class Worker extends HttpServlet {
@@ -26,15 +31,21 @@ public class Worker extends HttpServlet {
 	 GeoPt location = new GeoPt(latitude, longitude);
  
 	 System.out.println("\n\nWORK WORK\n\n");
-	 
-    //Save room to datastore
-	DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	 	 
+    //Build entity
 	Key cityKey = KeyFactory.createKey("City", city);
 	Entity room = new Entity("Room", roomname, cityKey);
 	room.setProperty("name", roomname);
 	room.setProperty("location", location);
 	room.setProperty("city", city);
 	room.setProperty("nr_of_users", new Integer(0));
+	//Put in memcache
+	String key = city+":"+roomname;
+	MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+	syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+	syncCache.put(key, room);
+	//Save to datastore
+	DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 	datastore.put(room);
  }
 }
