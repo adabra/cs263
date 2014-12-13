@@ -6,6 +6,7 @@ public class Utils {
 
 	static Utils utils;
 	private Pattern pattern;
+
 	
 	private Utils() {
 		pattern = Pattern.compile("[^a-zA-Z0-9]");
@@ -23,6 +24,11 @@ public class Utils {
 	        boolean hasSpecialChar = pattern.matcher(name).find();
 	        return !hasSpecialChar && name.length()>0;
 	}
+	
+	public boolean isValidCityName(String name) {
+		 
+        return name.length()>0;
+}
 	
 	public boolean isNumeric(String str)
 	{

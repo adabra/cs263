@@ -51,14 +51,15 @@ public class RoomServlet extends HttpServlet{
 		}
 		if (invalidNames) {
 			System.out.println("\n\n\nINVALID NAMES\n\n\n");
-			request.getRequestDispatcher("/roomselector2.jsp?lat="+lat+"&lon="+lon).
+			request.getRequestDispatcher("/roomselector.jsp?lat="+lat+"&lon="+lon).
 			forward(request, response);
 			return;
 		}
 		
 		
 		//Check if room exists
-		Key roomKey = new KeyFactory.Builder("City", city).addChild("Room", roomname).getKey();
+		Key roomKey = new KeyFactory.Builder("City", city).
+				addChild("Room", roomname).getKey();
 		Query query = new Query("Room", roomKey);
 		Entity room = datastore.prepare(query).asSingleEntity();
 		if (room == null) {
@@ -67,9 +68,13 @@ public class RoomServlet extends HttpServlet{
 			room = new Entity("Room", roomname, cityKey);
 			room.setProperty("name", roomname);
 			room.setProperty("location", new GeoPt(lat, lon));
-			datastore.put(room);
+			room.setProperty("city", city);
+			room.setProperty("nr_of_users", new Integer(0));
 			
 		}
+
+		
+		
 		float maxLat = lat+0.002f;
 		float minLat = lat-0.002f;
 		float maxLon = lon+0.002f;
@@ -82,7 +87,7 @@ public class RoomServlet extends HttpServlet{
 				&&roomLon>minLon && roomLon<maxLon)) {
 			request.setAttribute("Out_of_range", Boolean.TRUE);
 			System.out.println("\n\n\nOUT OF RANGE\n\n\n");
-			request.getRequestDispatcher("/roomselector2.jsp?lat="+lat+"&lon="+lon).
+			request.getRequestDispatcher("/roomselector.jsp?lat="+lat+"&lon="+lon).
 			forward(request, response);
 			return;
 		}
@@ -101,43 +106,20 @@ public class RoomServlet extends HttpServlet{
 		if (nameTaken) {
 			request.setAttribute("name_taken", Boolean.TRUE);
 			System.out.println("\n\n\nNAME TAKEN\n\n\n");
-			request.getRequestDispatcher("/roomselector2.jsp?lat="+lat+"&lon="+lon).
+			request.getRequestDispatcher("/roomselector.jsp?lat="+lat+"&lon="+lon).
 			forward(request, response);
-			//response.sendRedirect("/welcome.jsp?roomname="+roomname+"&username="+username);
 		}
 		else {
 			Entity user = new Entity("User", username, roomKey);
 			user.setProperty("name", username);
 			datastore.put(user);
+			System.out.println("\n\n\nNUMBEROFUSERSBEFORE: "+room.getProperty("nr_of_users").toString()+"\n\n\n");
+			room.setProperty("nr_of_users", Integer.parseInt(room.getProperty("nr_of_users").toString())+1);
+			System.out.println("NUMBEROFUSERSAFTER: "+room.getProperty("nr_of_users").toString()+"\n\n\n");
+			datastore.put(room);
 			request.getSession().setAttribute(city+":"+roomname, username);
-			//response.setAttribute("users", users);
 			response.sendRedirect("/room/"+city+"/"+roomname);
-			
-//			query = new Query("User", roomKey).setFilter(
-//					new Query.FilterPredicate("name", FilterOperator.EQUAL, username));
-//			String usernameResult = (String) datastore.prepare(query).asList(
-//					FetchOptions.Builder.withLimit(1)).get(0).getProperty("name");
-//			response.getWriter().println("Roomname: "+roomname+"\nUsername: "+usernameResult);
-//			response.getWriter().println("Users in chat:");
-//			users.add(0, user);
-//			for (Entity e : users) {
-//				response.getWriter().println(((String)e.getProperty("name")));
-//			}
-		}
-		
-		/*	
-		String chatroomName = req.getParameter("chatroomName");
-	    Key chatroomKey = KeyFactory.createKey("Chatroom", chatroomName);
-	    String content = req.getParameter("content");
-	    Date date = new Date();
-	    Entity message = new Entity("Message", chatroomKey);
-	    message.setProperty("user", user);
-	    message.setProperty("date", date);
-	    message.setProperty("content", content);
-
-	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-	    datastore.put(message);*/
-
+		}	
 	}
 	
 	@Override

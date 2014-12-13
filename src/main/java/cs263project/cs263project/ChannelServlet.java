@@ -17,20 +17,23 @@ import com.google.appengine.api.channel.ChannelService;
 import com.google.appengine.api.channel.ChannelServiceFactory;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
+import com.google.gson.Gson;
 
 @SuppressWarnings("serial")
 public class ChannelServlet extends HttpServlet {
 	
-	private final String CHAT_MESSAGE = "cha";
-	private final String LEAVE_MESSAGE = "lea";
-	private final String JOIN_MESSAGE = "joi";
-	private final String IMAGE_MESSAGE = "ima";
-	private final String BLOB_MESSAGE = "blo";
+	private final String CHAT_MESSAGE = "chat";
+	private final String LEAVE_MESSAGE = "leave";
+	private final String JOIN_MESSAGE = "join";
+	private final String IMAGE_MESSAGE = "image";
+	private final String BLOB_MESSAGE = "blob";
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
@@ -50,16 +53,17 @@ public class ChannelServlet extends HttpServlet {
 			resp.sendRedirect("/");
 			return;
 		}
-		
+		Message message;
 		String type = req.getPathInfo();
 		String username = (String)(req.getSession().getAttribute(roomname));
+		Calendar now = Calendar.getInstance();
+		int hours = now.get(Calendar.HOUR_OF_DAY);
+		int minutes = now.get(Calendar.MINUTE);
+		String time = hours+":"+minutes;
 		if (isMessage(type)) {
-			Calendar now = Calendar.getInstance();
-			int hours = now.get(Calendar.HOUR_OF_DAY);
-			int minutes = now.get(Calendar.MINUTE);
-			String formattedMessage = 
-					"["+hours+":"+minutes+"] ["+username+"] "+req.getParameter("message");
-			sendMessage(roomname, CHAT_MESSAGE, formattedMessage);
+			System.out.println("sending JSON message");
+			message = new Message(CHAT_MESSAGE, username, req.getParameter("message"), time);
+			sendMessage(roomname, message);
 	
 		}
 		else if (isImage(type)) {
@@ -71,30 +75,45 @@ public class ChannelServlet extends HttpServlet {
 		    	return;
 		    }
 		    else {
-		    	Calendar now = Calendar.getInstance();
-		    	int hours = now.get(Calendar.HOUR_OF_DAY);
-		    	int minutes = now.get(Calendar.MINUTE);
 		    	ImagesService imagesService = ImagesServiceFactory.getImagesService();
-		    	String url = imagesService.getServingUrl(ServingUrlOptions.Builder.withBlobKey(blobKey));
-		    	String formattedImageMessage = 
-		    	"["+hours+":"+minutes+"] ["+username+"] "
-		    	+ "<a href=\""+url+"\" target=\"_blank\"> <img src=\""
+		    	String url = imagesService.getServingUrl(
+		    			ServingUrlOptions.Builder.withBlobKey(blobKey));
+		    	String imageMsgContent = "<a href=\""+url+"\" target=\"_blank\"> <img src=\""
 		    			+url+"=s128\" alt=\"Error displaying image\"></a>";
-		    	sendMessage(roomname, IMAGE_MESSAGE, formattedImageMessage);
-		    	sendMessage(roomname, BLOB_MESSAGE, username+";"+blobstoreService.createUploadUrl("/channel/image/?roomname="+roomname));
+		    	message = new Message(IMAGE_MESSAGE, username, imageMsgContent, time);
+		    	sendMessage(roomname, message);
+		    	String blobMsgContent = blobstoreService.
+		    			createUploadUrl("/channel/image/?roomname="+roomname);
+		    	message = new Message(BLOB_MESSAGE, username, blobMsgContent, time);
+		    	sendMessage(roomname, message);
 		    }
 		}
 		else if (isLeave(type)) {
 			System.out.println("\n\nLEAVELEAVE\n\n");
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-			Key userkey = new KeyFactory.Builder("Room", roomname)
+			//Breaking roomname into city and room
+			String[] cityAndRoom = roomname.split(":");
+			String city = cityAndRoom[0];
+			String room = cityAndRoom[1];
+			Key userkey = new KeyFactory.Builder("City", city)
+			.addChild("Room", room)
 			.addChild("User", username).getKey();
 			datastore.delete(userkey);
+			//decrement user count in room
+			Key roomKey = new KeyFactory.Builder("City", city)
+			.addChild("Room", room).getKey();
+			Query query = new Query("Room", roomKey);
+			Entity roomEntity = datastore.prepare(query).asSingleEntity();
+			roomEntity.setProperty("nr_of_users", Integer.parseInt(roomEntity.getProperty("nr_of_users").toString())-1);
+			datastore.put(roomEntity);
+			
+			message = new Message(LEAVE_MESSAGE, username, "", time);
 			req.getSession().removeAttribute(roomname);
-			sendMessage(roomname, LEAVE_MESSAGE, username);
+			sendMessage(roomname, message);
 		}
 		else if (isJoin(type)) {
-			sendMessage(roomname, JOIN_MESSAGE, username);
+			message = new Message(JOIN_MESSAGE, username, "", time);
+			sendMessage(roomname, message);
 		}
 		else {
 			System.out.println("\n\nkomtilslutten\n\n");
@@ -103,12 +122,10 @@ public class ChannelServlet extends HttpServlet {
 		
 	}
 	
-	private void sendMessage(String roomname, String type, String content) {
-		ChannelService channelService = ChannelServiceFactory
-				.getChannelService();
-		channelService.sendMessage(new ChannelMessage(roomname,
-				type+content));
-		System.out.println(type+content);
+	private void sendMessage(String roomname, Message message) {
+		ChannelService channelService = ChannelServiceFactory.
+				getChannelService();
+		channelService.sendMessage(new ChannelMessage(roomname, new Gson().toJson(message)));
 	}
 	
 	private boolean isMessage(String type) {

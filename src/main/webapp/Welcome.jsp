@@ -10,15 +10,15 @@
 <link
 	href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.0/slate/bootstrap.min.css"
 	rel="stylesheet">
-<title>audchat</title>
+<title>localchat</title>
 </head>
 <body>  
     
     <div class="col-lg-6 col-lg-offset-3">
 			<div class="bs-component">
 				<div class="well well-lg" style="height: 50vh; overflow: auto;">
-    				<h1>audchat</h1>
-    				<h3>Tell us your location to start using audchat</h3>
+    				<h1>localchat</h1>
+    				<h3>Tell us your location to start using localchat</h3>
 					<button class="btn btn-default" onclick="getLocation()">Send location</button>
     			</div>
     		</div>
@@ -40,7 +40,7 @@
 	
 	function showPosition(position) {
 	    //window.location = "/roomfinder?lat="+position.coords.latitude+"&lon="+position.coords.longitude;
-		window.location = "/roomselector2.jsp?lat="+position.coords.latitude+"&lon="+position.coords.longitude;
+		window.location = "/roomselector.jsp?lat="+position.coords.latitude+"&lon="+position.coords.longitude;
 	}
 	
 	function showError(error) {

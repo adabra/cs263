@@ -48,7 +48,7 @@ List<Entity> users = datastore.prepare(query)
 	<script src="http://malsup.github.com/jquery.form.js"></script>
 	<link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
 	<script type="text/javascript" src="/js/util.js"></script>
-<title>audchat: <%= roomname %></title>
+<title><%= roomname %></title>
 </head>
 <body>
 	<div class="col-lg-6 col-lg-offset-3">
@@ -128,49 +128,45 @@ List<Entity> users = datastore.prepare(query)
 		//chatbox.innerHTML +="Channel opened<br>";
 		send("join")
 		};
+		
     socket.onmessage=function(message){
-    	var type = message.data.substring(0,3);
-    	var content = message.data.substring(3).trim();
-    	if (type!= "ima") {
-    		content = escapeHtml(content);    		
+    	var messageObject = JSON && JSON.parse(message.data) || $.parseJSON(message.data);
+    	messageObject.username = messageObject.username.trim();
+    	
+    	if (messageObject.type!= "image") {
+    		messageObject.content = escapeHtml(messageObject.content);    		
     	}
-    	if (type == "cha") {
-			chatbox.innerHTML +=content+"<br>";
+    	if (messageObject.type == "chat" || messageObject.type == "image") {
+			chatbox.innerHTML +="["+messageObject.time+"] "+
+								"["+messageObject.username+"] "+
+								messageObject.content+"<br>";
 			chatbox.scrollTop = chatbox.scrollHeight;    		
     	}
-    	else if (type == "ima") {
-    		chatbox.innerHTML +=content+"<br>";
-			chatbox.scrollTop = chatbox.scrollHeight;
-    	}
-    	else if (type == "blo") {
-    		console.log("BLO");
-    		var separator = content.indexOf(";");
-    		console.log("separator: "+separator);
-    		var name = content.substring(0,separator);
-    		console.log("name: "+name);
-    		console.log("username: "+document.getElementById('username').innerHTML);
-    		console.log(name == document.getElementById('username').innerHTML);
-    		if (name == document.getElementById('username').innerHTML.trim()) {
-    			var url = content.substring(separator+1);
+    	else if (messageObject.type == "blob") {
+    		console.log("BLOB");    		
+    		if (messageObject.username == document.getElementById('username').innerHTML.trim()) {
+    			var url = messageObject.content;
     			console.log("url: "+url)
 				var form = document.getElementById('upload_file');
 				form.setAttribute('action', url);  
 				console.log("done");
     		}
     	}
-    	else if (type == "lea") {
-    		document.getElementById(content).remove();
-    		chatbox.innerHTML +=content+" has left the room.<br>";
+    	else if (messageObject.type == "leave") {
+    		document.getElementById(messageObject.username).remove();
+    		chatbox.innerHTML +="["+messageObject.time+"] "+
+    							messageObject.username+" has left the room.<br>";
 			chatbox.scrollTop = chatbox.scrollHeight;
     	}
-    	else if (type == "joi" && document.getElementById('username').innerHTML != content) {
+    	else if (messageObject.type == "join" && document.getElementById('username').innerHTML != messageObject.username) {
     		var ul = document.getElementById("userslist");
     		var li = document.createElement("li");
-    		li.appendChild(document.createTextNode(content));
-    		li.setAttribute("id",content);
+    		li.appendChild(document.createTextNode(messageObject.username));
+    		li.setAttribute("id",messageObject.username);
     		li.setAttribute("class","col-lg-3 col-lg-offset-0")
     		ul.appendChild(li);
-    		chatbox.innerHTML +=content+" has entered the room.<br>";
+    		chatbox.innerHTML +="["+messageObject.time+"] "+
+    							messageObject.username+" has entered the room.<br>";
 			chatbox.scrollTop = chatbox.scrollHeight;
     	}
     };

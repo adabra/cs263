@@ -27,27 +27,10 @@
 		
 		<servlet-mapping>
 		    <servlet-name>Jersey Web Application</servlet-name>
-		    <url-pattern>/context/*</url-pattern>
+		    <url-pattern>/rest/*</url-pattern>
 		</servlet-mapping>
 				
-		    <servlet>
-        <servlet-name>chatroom</servlet-name>
-        <servlet-class>cs263project.cs263project.ChatRoomServlet</servlet-class>
-    </servlet>
-   	<servlet>
-       <servlet-name>submit</servlet-name>
-       <servlet-class>cs263project.cs263project.SubmitMessageServlet</servlet-class>
-    </servlet>
-   
-    <servlet-mapping>
-        <servlet-name>submit</servlet-name>
-        <url-pattern>/submit</url-pattern>
-    </servlet-mapping> 
-    <servlet-mapping>
-        <servlet-name>chatroom</servlet-name>
-        <url-pattern>/chatroom</url-pattern>
-    </servlet-mapping>
-    
+				
     <servlet>
        <servlet-name>channel</servlet-name>
        <servlet-class>cs263project.cs263project.ChannelServlet</servlet-class>
@@ -65,42 +48,6 @@
         <servlet-name>room</servlet-name>
         <url-pattern>/room/*</url-pattern>
     </servlet-mapping> 
-    
-  <servlet>
-    <servlet-name>Upload</servlet-name>
-    <servlet-class>cs263project.cs263project.Upload</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>Upload</servlet-name>
-    <url-pattern>/upload/*</url-pattern>
-  </servlet-mapping>
-  
-  <servlet>
-    <servlet-name>Serve</servlet-name>
-    <servlet-class>cs263project.cs263project.Serve</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>Serve</servlet-name>
-    <url-pattern>/serve</url-pattern>
-  </servlet-mapping>  
-  
-  <servlet>
-    <servlet-name>Gallery</servlet-name>
-    <servlet-class>cs263project.cs263project.GalleryServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>Gallery</servlet-name>
-    <url-pattern>/gallery/*</url-pattern>
-  </servlet-mapping>  
-  
-  <servlet>
-    <servlet-name>Roomfinder</servlet-name>
-    <servlet-class>cs263project.cs263project.RoomfinderServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>Roomfinder</servlet-name>
-    <url-pattern>/roomfinder</url-pattern>
-  </servlet-mapping> 
   
   <servlet>
     <servlet-name>Seed</servlet-name>
@@ -111,6 +58,23 @@
     <url-pattern>/seed</url-pattern>
   </servlet-mapping> 
   
+  <servlet-mapping>
+	    <servlet-name>Worker</servlet-name>
+	    <url-pattern>/worker</url-pattern>
+	</servlet-mapping>
+	<servlet>
+        <servlet-name>Worker</servlet-name>
+        <servlet-class>cs263project.cs263project.Worker</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+	    <servlet-name>RestPostTest</servlet-name>
+	    <url-pattern>/restposttest</url-pattern>
+	</servlet-mapping>
+	<servlet>
+        <servlet-name>RestPostTest</servlet-name>
+        <servlet-class>cs263project.cs263project.RestPostTest</servlet-class>
+    </servlet>
   
 	<welcome-file-list>
 	        <welcome-file>welcome.jsp</welcome-file>

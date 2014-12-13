@@ -77,7 +77,7 @@
     <style type="text/css">
       html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
     </style>
-<title>audchat</title>
+<title>localchat</title>
 </head>
 <body>
 	<% 
