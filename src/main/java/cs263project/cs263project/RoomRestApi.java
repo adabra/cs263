@@ -110,8 +110,14 @@ public class RoomRestApi {
     	}
     	//Validate the input data
     	//Check roomname validity
-		if (!Utils.getInstance().isValidName(roomData.name.trim())
-				|| !Utils.getInstance().isValidCityName(city.trim())) {
+		if (!Validator.isValidName(roomData.name.trim())
+				|| !Validator.isValidCityName(city.trim())) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+		
+		//Check lat/lon ranges
+		if (!Validator.isValidLatitude(roomData.location.getLatitude()) 
+				|| !Validator.isValidLongitude(roomData.location.getLongitude()) ) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
     	

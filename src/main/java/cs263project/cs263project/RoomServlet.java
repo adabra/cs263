@@ -40,12 +40,12 @@ public class RoomServlet extends HttpServlet{
 		
 		
 		//Check roomname validity
-		if (!Utils.getInstance().isValidName(roomname)){
+		if (!Validator.isValidName(roomname)){
 			request.setAttribute("invalid_roomname", Boolean.TRUE);
 			invalidNames = true;
 		}
 		//Check username validity
-		if (!Utils.getInstance().isValidName(username)){
+		if (!Validator.isValidName(username)){
 			request.setAttribute("invalid_username", Boolean.TRUE);
 			invalidNames = true;
 		}

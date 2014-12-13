@@ -17,7 +17,7 @@ public class Test {
 		Message msg = new Message("CHAT_MESSAGE", username, content, time);
 		System.out.println(gson.toJson(msg));
 
-		System.out.println(Utils.getInstance().isValidCityName("."));
+		System.out.println(Validator.isValidCityName("."));
 	}
 	
 }

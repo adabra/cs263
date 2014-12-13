@@ -11,20 +11,31 @@
 <%@ page import="com.google.appengine.api.datastore.Query"%>
 <%@ page import="com.google.appengine.api.datastore.Query.Filter"%>
 <%@ page import="com.google.appengine.api.datastore.Query.FilterOperator"%>
-<%@ page import="cs263project.cs263project.Utils"%>
+<%@ page import="cs263project.cs263project.Validator"%>
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="com.google.appengine.api.datastore.GeoPt"%>
 <%
 		String latString = request.getParameter("lat");
 		String lonString = request.getParameter("lon");
 		
-		if (!Utils.getInstance().isNumeric(latString) 
-				|| !Utils.getInstance().isNumeric(lonString)) {
+		//validate request parameters
+		if (latString == null
+				|| lonString == null
+				|| !Validator.isNumeric(latString) 
+				|| !Validator.isNumeric(lonString)) {
 			response.sendRedirect("/");
 			return;
 		}
+		
 		float lat = Float.valueOf(latString);
 		float lon = Float.valueOf(lonString);
+		
+		//validate paramter ranges
+		if (!Validator.isValidLatitude(lat) || !Validator.isValidLongitude(lon)) {
+			response.sendRedirect("/");
+			return;
+		}
+		
 		float maxLat = lat+0.002f;
 		float minLat = lat-0.002f;
 		float maxLon = lon+0.002f;
