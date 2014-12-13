@@ -59,7 +59,7 @@ List<Entity> users = datastore.prepare(query)
 			<b>Nick:</b> <span id='username'><%= username %></span>
 		</div>
 		<div class="col-lg-4">
-			<button class="btn btn-default" onclick="leaveRoom();window.location.replace('/')">
+			<button class="btn btn-default" onclick="leaveRoom()">
 				Leave Room
 			</button>
 		</div>
@@ -96,8 +96,8 @@ List<Entity> users = datastore.prepare(query)
 	
 	<div class="col-lg-6 col-lg-offset-3">
 		<input  class='col-lg-11 col-md-11 col-sm-11' type='text' id='userInput' value=''
-			onkeydown='if (event.keyCode == 13) send("message")' />
-		<input class='col-lg-1 col-md-1 col-sm-1 btn btn-default' style='padding-top: 2px; padding-bottom: 2px;' type='button' onclick='send("message")' value='send' />
+			onkeydown='if (event.keyCode == 13) send("message", function(){})' />
+		<input class='col-lg-1 col-md-1 col-sm-1 btn btn-default' style='padding-top: 2px; padding-bottom: 2px;' type='button' onclick='send("message", function(){})' value='send' />
 	</div>
 
 	<div class='col-lg-6 col-lg-offset-3'>
@@ -126,7 +126,7 @@ List<Entity> users = datastore.prepare(query)
 	var chatbox=document.getElementById('chatbox');	
 	socket.onopen=function() { 
 		//chatbox.innerHTML +="Channel opened<br>";
-		send("join")
+		send("join", function(){})
 		};
 		
     socket.onmessage=function(message){
@@ -177,18 +177,19 @@ List<Entity> users = datastore.prepare(query)
 		chatbox.innerHTML += "Channel closed<br>";
     };        
  
-    function send(type) {
+    function send(type, onreadystate) {
     	var userInput = document.getElementById('userInput').value;
     	var roomName = document.getElementById('roomname').innerHTML;
 		
     	var xhr = new XMLHttpRequest();
+    	xhr.onreadystatechange = onreadystate;
     	xhr.open('POST', "/channel/"+type+"?message="+userInput+"&roomname="+roomName, true);
     	xhr.send();
     	document.getElementById('userInput').value = '';
     };
     
     function leaveRoom() {
-    	send("leave");
+    	send("leave", function () {window.location.replace('/')});
     };
     
     $('#upload_file').submit(function() { 
