@@ -1,6 +1,7 @@
 package cs263project.cs263project;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -35,7 +36,7 @@ public class RoomServlet extends HttpServlet{
 			city = request.getParameter("city");
 		}
 		if (city == null) {
-			city = "goleta";
+			city = "no-city";
 		}
 		
 		
@@ -133,7 +134,7 @@ public class RoomServlet extends HttpServlet{
 			roomname = roomname.substring(0, roomname.length()-1);
 		}
 		if (request.getSession().getAttribute(cityname+":"+roomname)!=null) {
-			request.getRequestDispatcher("/room.jsp?cityname="+cityname+"&roomname="+roomname).forward(request, response);
+			request.getRequestDispatcher("/room.jsp?cityname="+ URLEncoder.encode(cityname, "UTF-8")+"&roomname="+roomname).forward(request, response);
 		}
 		else {
 			System.out.println("\n\n\nSESSION DOESN'T HAVE ROOMNAME"+cityname+":"+roomname);

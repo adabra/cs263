@@ -43,11 +43,8 @@
 		
 		String city = request.getHeader("X-AppEngine-City");
 		System.out.println("lat: "+lat+"\nlon: "+lon+"\ncity: "+city);
-		if (city==null) {
-			city = request.getParameter("city");
-		}
 		if (city == null) {
-			city = "goleta";
+			city = "no-city";
 		}
 		Key cityKey = KeyFactory.createKey("City", city);
 		

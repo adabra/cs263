@@ -4,16 +4,17 @@ import java.util.regex.Pattern;
 
 public class Validator {
 
-	
+	private static final Pattern cityPattern =  Pattern.compile(
+	        "^[a-z]([a-z\\d\\.\\- ]{0,18}[a-z\\d])?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern namePattern = Pattern.compile("[^a-zA-Z0-9]");
 	public static boolean isValidName(String name) {
-		 	Pattern pattern = Pattern.compile("[^a-zA-Z0-9]");
-	        boolean hasSpecialChar = pattern.matcher(name).find();
+	        boolean hasSpecialChar = namePattern.matcher(name).find();
 	        return !hasSpecialChar && name.length()>0;
 	}
 	
 	public static boolean isValidCityName(String name) {
-		 
-        return name.length()>0;
+		boolean hasNoSpecialChar = cityPattern.matcher(name).find();
+        return hasNoSpecialChar && name.length()>0;
 }
 	
 	public static boolean isNumeric(String str)
