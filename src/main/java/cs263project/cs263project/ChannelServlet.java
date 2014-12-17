@@ -30,7 +30,14 @@ import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.gson.Gson;
 
-@SuppressWarnings("serial")
+/**
+ * 
+ * This ChannelServlet class receives ajax requests from clients, and performs appropriate
+ * actions depending on the requests.
+ * Mapped to the /channel URL.
+ *
+ */
+
 public class ChannelServlet extends HttpServlet {
 	
 	private final String CHAT_MESSAGE = "chat";
@@ -49,35 +56,46 @@ public class ChannelServlet extends HttpServlet {
 		messageReceived(req, resp);
 	}
 	
+	
+	/**
+	 * Handles message requests and determines the appropriate response.
+	 * @param req The HttpServletRequest object from doGet/doPost
+	 * @param resp The HttpServletResponse object from doGet/doPost
+	 * @throws IOException
+	 */
 	private void messageReceived(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		
 		String roomname = req.getParameter("roomname");
-		//Check if user is in room
+		//Check if the user is in room
 		if (req.getSession().getAttribute(roomname) == null) {
 			resp.sendRedirect("/");
 			return;
 		}
 		Message message;
+		//Get the message type from the last part of the requested url, e.g. /image
 		String type = req.getPathInfo();
 		String username = (String)(req.getSession().getAttribute(roomname));
 		Calendar now = Calendar.getInstance();
 		int hours = now.get(Calendar.HOUR_OF_DAY);
 		int minutes = now.get(Calendar.MINUTE);
 		String time = hours+":"+minutes;
+		
 		if (isMessage(type)) {
-			System.out.println("sending JSON message");
+			//Send the message received by the user to the chat room.
 			message = new Message(CHAT_MESSAGE, username, req.getParameter("message"), time);
 			sendMessage(roomname, message);
-	
 		}
+		
 		else if (isImage(type)) {
+			//Send a link to the uploaded image to the chat room,
+			//and send the user a new blobstore upload url.
 			BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
 			Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(req);
 			BlobKey blobKey = blobs.get("file").get(0);
-
 		    if (blobKey == null) {
 		    	return;
 		    }
+		    
 		    else {
 		    	ImagesService imagesService = ImagesServiceFactory.getImagesService();
 		    	String url = imagesService.getServingUrl(
@@ -92,15 +110,16 @@ public class ChannelServlet extends HttpServlet {
 		    	sendMessage(roomname, message);
 		    }
 		}
+		
 		else if (isLeave(type)) {
-			System.out.println("\n\nLEAVELEAVE\n\n");
+			//Delete user from datastore, decrement the user count of the room,
+			//and send a "user left" message to the chat room
 			
-			//Breaking roomname into city and room
+			//Break roomname into city and room
 			String[] cityAndRoom = roomname.split(":");
 			String city = cityAndRoom[0];
 			String room = cityAndRoom[1];
-			
-			//Removing user from datastore
+			//Remove user from datastore
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			Key userkey = new KeyFactory.Builder("City", city)
 			.addChild("Room", room)
@@ -123,35 +142,57 @@ public class ChannelServlet extends HttpServlet {
 			req.getSession().removeAttribute(roomname);
 			sendMessage(roomname, message);
 		}
+		
 		else if (isJoin(type)) {
+			//Send a "user joined" message to the chat room
 			message = new Message(JOIN_MESSAGE, username, "", time);
 			sendMessage(roomname, message);
-		}
-		else {
-			System.out.println("\n\nkomtilslutten\n\n");
-		}
-		
-		
+		}	
 	}
 	
+	/**
+	 * Sends the given message to the room with name roomname.
+	 * @param roomname The name of the room.
+	 * @param message The message object.
+	 */
 	private void sendMessage(String roomname, Message message) {
 		ChannelService channelService = ChannelServiceFactory.
 				getChannelService();
 		channelService.sendMessage(new ChannelMessage(roomname, new Gson().toJson(message)));
 	}
 	
+	/**
+	 * Checks if a request is a for a chat message.
+	 * @param type The type of the request.
+	 * @return True if the request is for a chat message, false otherwise.
+	 */
 	private boolean isMessage(String type) {
 		return type.equals("/message") || type.equals("/message/");
 	}
 	
+	/**
+	 * Checks if a request is a for a leave message.
+	 * @param type The type of the request.
+	 * @return True if the request is for a leave message, false otherwise.
+	 */
 	private boolean isLeave(String type) {
 		return type.equals("/leave") || type.equals("/leave/");
 	}
 	
+	/**
+	 * Checks if a request is a for a join message.
+	 * @param type The type of the request.
+	 * @return True if the request is for a join message, false otherwise.
+	 */
 	private boolean isJoin(String type) {
 		return type.equals("/join") || type.equals("/join/");
 	}
 	
+	/**
+	 * Checks if a request is a for an image message.
+	 * @param type The type of the request.
+	 * @return True if the request is for an image message, false otherwise.
+	 */
 	private boolean isImage(String type) {
 		return type.equals("/image") || type.equals("/image/");
 	}

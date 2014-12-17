@@ -1,6 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 
+<%--
+
+This jsp is the welcome-file presented to the user when receiving a GET request
+to the root URL. It displays a button allowing the user to share his/her location.
+If the user enables geolocation, he/she is redirected to the roomselector.jsp.
+
+ --%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>

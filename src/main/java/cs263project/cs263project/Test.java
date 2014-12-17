@@ -16,9 +16,8 @@ public class Test {
 	
 	public static void main(String[] args) {
 		Gson gson = new Gson();
-		String roomname = "Room1";
-		String username = "hotgrl18";
-		String content = "tazt priv?";
+		String username = "usr";
+		String content = "funny?";
 		String time = ""+Calendar.getInstance().get(Calendar.HOUR_OF_DAY) + ":" +  Calendar.getInstance().get(Calendar.MINUTE);
 		Message msg = new Message("CHAT_MESSAGE", username, content, time);
 		System.out.println(gson.toJson(msg));
@@ -27,6 +26,7 @@ public class Test {
 		while ((in=s.nextLine()) != "end") {
 			System.out.println(Validator.isValidCityName(in));			
 		}
+		s.close();
 		
 		
 		//Try getting room from memcache
@@ -39,8 +39,11 @@ public class Test {
 	      
 
 	      syncCache.put(key, roomEntity); // populate cache
-	    }
+	    }																																																																										
 
+	    String[] sa = new String[]{
+	    		"hei", 
+	    		"nei"};
 		
 	}
 	

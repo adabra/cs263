@@ -22,15 +22,26 @@ import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
+/**
+ * This class handles requests to join or create chat rooms. 
+ * Validates user and room names.
+ * Mapped to the /room URL.
+ *
+ */
+
 public class RoomServlet extends HttpServlet{
 
+	/**
+	 * Post requests to /room represents a request to either create a new room
+	 * or join an existing one.
+	 */
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) 
 			throws IOException, ServletException {
 		
-		boolean invalidNames = false;
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
+		
+		boolean invalidNames = false;
 		String roomname = request.getParameter("roomname").trim();
 		String username = request.getParameter("username").trim();
 		float lat = Float.valueOf(request.getParameter("lat"));
@@ -43,7 +54,6 @@ public class RoomServlet extends HttpServlet{
 			city = "no-city";
 		}
 		
-		
 		//Check roomname validity
 		if (!Validator.isValidName(roomname)){
 			request.setAttribute("invalid_roomname", Boolean.TRUE);
@@ -55,7 +65,6 @@ public class RoomServlet extends HttpServlet{
 			invalidNames = true;
 		}
 		if (invalidNames) {
-			System.out.println("\n\n\nINVALID NAMES\n\n\n");
 			request.getRequestDispatcher("/roomselector.jsp?lat="+lat+"&lon="+lon).
 			forward(request, response);
 			return;
@@ -69,9 +78,6 @@ public class RoomServlet extends HttpServlet{
 	    Query query;
 	    Key roomKey = new KeyFactory.Builder("City", city).
 	    		addChild("Room", roomname).getKey();
-	    if (roomEntity != null) {
-	    	System.out.println(city+":"+roomname+" found in memcache!");
-	    }
 	    if (roomEntity == null) {
 			//Check if room exists in datastore
 			query = new Query("Room", roomKey);
@@ -88,7 +94,8 @@ public class RoomServlet extends HttpServlet{
 			}
 	    }
 		
-		
+		//Check if the room is within the user's range (useful when the
+	    //user joins an existing room.
 		float maxLat = lat+0.002f;
 		float minLat = lat-0.002f;
 		float maxLon = lon+0.002f;
@@ -100,11 +107,13 @@ public class RoomServlet extends HttpServlet{
 		if (!(roomLat>minLat && roomLat<maxLat
 				&&roomLon>minLon && roomLon<maxLon)) {
 			request.setAttribute("Out_of_range", Boolean.TRUE);
-			System.out.println("\n\n\nOUT OF RANGE\n\n\n");
 			request.getRequestDispatcher("/roomselector.jsp?lat="+lat+"&lon="+lon).
 			forward(request, response);
 			return;
 		}
+		
+		//Check if the name enterd by the user is already in use
+		//in the room.
 		query = new Query("User", roomKey).addSort("name",
 				Query.SortDirection.ASCENDING);
 		List<Entity> users = datastore.prepare(query)
@@ -119,7 +128,6 @@ public class RoomServlet extends HttpServlet{
 		
 		if (nameTaken) {
 			request.setAttribute("name_taken", Boolean.TRUE);
-			System.out.println("\n\n\nNAME TAKEN\n\n\n");
 			request.getRequestDispatcher("/roomselector.jsp?lat="+lat+"&lon="+lon).
 			forward(request, response);
 		}
@@ -141,13 +149,20 @@ public class RoomServlet extends HttpServlet{
 		}	
 	}
 	
+	/**
+	 * If the user navigates away from the room without pressing the "leave"
+	 * button, he/she can get back in the room by entering the proper URL
+	 * in the browser navigation bar. If the user is not in the room, he/she
+	 * will not be able to join, and redirected to / instead.
+	 */
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 			throws IOException, ServletException {
+		//Break roomname into city and room
 		String[] cityAndRoom = request.getPathInfo().substring(1).split("/");
 		String cityname = cityAndRoom[0];
 		String roomname = cityAndRoom[1];
-		System.out.println("IN ROOMSERVLET\n\n\n\ncity: "+cityname+"room:" +roomname+"\n\n\n");
+		
 		if (roomname.endsWith("/")) {
 			roomname = roomname.substring(0, roomname.length()-1);
 		}
@@ -155,7 +170,6 @@ public class RoomServlet extends HttpServlet{
 			request.getRequestDispatcher("/room.jsp?cityname="+ URLEncoder.encode(cityname, "UTF-8")+"&roomname="+roomname).forward(request, response);
 		}
 		else {
-			System.out.println("\n\n\nSESSION DOESN'T HAVE ROOMNAME"+cityname+":"+roomname);
 			response.sendRedirect("/");
 		}
 	}

@@ -20,6 +20,10 @@ import com.google.appengine.api.datastore.Query;
 
 public class SeedServlet extends HttpServlet {
 
+	/**
+	 * This class is used for seeding the datastore with rooms while testing.
+	 * Not to be used during normal operation.
+	 */
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -29,7 +33,6 @@ public class SeedServlet extends HttpServlet {
 		Entity e;
 		String[] cityNames = {"goleta", "goleta", "goleta", "goleta", "santa barbara", "los angeles"};
 		String name;
-		int[] etternavn = {0,1};
 		float[][] cityCoords = {{34.4340633f, -119.8223008f}, {34.433401f,-119.82252f}, {34.433655f,-119.820502f}, {34.415033f, -119.846973f}, {34.4208300f ,-119.6981900f}, {34.0522300f, -118.2436800f}}; 
 		for(int i = 0; i < 4; i++) {
 			cityKey = KeyFactory.createKey("City", cityNames[i%3]);
@@ -37,6 +40,7 @@ public class SeedServlet extends HttpServlet {
 			e = new Entity("Room", name, cityKey);
 			e.setProperty("location", new GeoPt(cityCoords[i%4][0], cityCoords[i%3][1]));
 			e.setProperty("name", name);
+			e.setProperty("nr_of_users", 0);
 			datastore.put(e);
 		}
 		
@@ -47,7 +51,7 @@ public class SeedServlet extends HttpServlet {
 		for (Entity room : rooms) {
 			response.getWriter().println(room.getProperty("name"));			
 		}
-		response.getWriter().println("slutt");
+		response.getWriter().println("end");
 	}
 	
 	

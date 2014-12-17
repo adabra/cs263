@@ -24,7 +24,6 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
@@ -36,6 +35,12 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+/**
+ * This class handles requests to a REST API, using json.
+ * Supports getting a single room, a list of rooms in a city, and posting
+ * a new room.
+ * Mapped to the /rest URL.
+ */
 
 @Path("/room")
 public class RoomRestApi {
@@ -122,19 +127,19 @@ public class RoomRestApi {
     	RoomData roomData;
     	try {
     		roomData = new Gson().fromJson(body, RoomData.class);
-    		System.out.println(roomData);
     	}
     	catch (JsonSyntaxException e) {
     		return Response.status(Status.BAD_REQUEST).build();
     	}
     	//Validate the input data
-    	//Check roomname validity
+    	
+    	//Check room and city name validity
 		if (!Validator.isValidName(roomData.name.trim())
 				|| !Validator.isValidCityName(city.trim())) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 		
-		//Check lat/lon ranges
+		//Check latitude/longitude ranges
 		if (!Validator.isValidLatitude(roomData.location.getLatitude()) 
 				|| !Validator.isValidLongitude(roomData.location.getLongitude()) ) {
 			return Response.status(Status.BAD_REQUEST).build();
