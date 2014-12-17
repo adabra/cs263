@@ -62,6 +62,7 @@ public class RoomRestApi {
     		@PathParam("city") String city) {
     	
     	//Try getting room from memcache
+    	city = city.replace("+", " ");
 		String key = city+":"+roomname;
 		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
 	    syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
