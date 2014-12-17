@@ -112,7 +112,7 @@ public class RoomServlet extends HttpServlet{
 			return;
 		}
 		
-		//Check if the name enterd by the user is already in use
+		//Check if the name entered by the user is already in use
 		//in the room.
 		query = new Query("User", roomKey).addSort("name",
 				Query.SortDirection.ASCENDING);
@@ -137,9 +137,7 @@ public class RoomServlet extends HttpServlet{
 			user.setProperty("name", username);
 			//Save user to datastore
 			datastore.put(user);
-			System.out.println("\n\n\nNUMBEROFUSERSBEFORE: "+roomEntity.getProperty("nr_of_users").toString()+"\n\n\n");
 			roomEntity.setProperty("nr_of_users", Integer.parseInt(roomEntity.getProperty("nr_of_users").toString())+1);
-			System.out.println("NUMBEROFUSERSAFTER: "+roomEntity.getProperty("nr_of_users").toString()+"\n\n\n");
 			//Put or update room in memcache
 			syncCache.put(key, roomEntity);
 			//Save room to datastore
@@ -150,7 +148,8 @@ public class RoomServlet extends HttpServlet{
 	}
 	
 	/**
-	 * If the user navigates away from the room without pressing the "leave"
+	 * Forwards the user to the room.jsp with correct parameters.
+	 * If the user navigates away from a chat room without pressing the "leave"
 	 * button, he/she can get back in the room by entering the proper URL
 	 * in the browser navigation bar. If the user is not in the room, he/she
 	 * will not be able to join, and redirected to / instead.
